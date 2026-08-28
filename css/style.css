@@ -301,6 +301,86 @@ body.cinema-mode .cinema-letterbox {
   padding-bottom: 8px;
 }
 
+.panel-header-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.panel-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.panel-close-btn:hover {
+  background: rgba(255, 51, 102, 0.4);
+  border-color: var(--accent-red);
+}
+
+.hud-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 45;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.hud-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btn-restore-hud {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  background: linear-gradient(135deg, #0072ff, #00d2ff);
+  color: #fff;
+  border: none;
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.5);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.2s;
+}
+
+.btn-restore-hud:hover {
+  transform: scale(1.05);
+}
+
+body.clean-hud .hud-header,
+body.clean-hud .hud-footer,
+body.clean-hud .audio-banner,
+body.clean-hud .hud-panel {
+  display: none !important;
+}
+
+body.clean-hud .btn-restore-hud {
+  display: flex !important;
+}
+
 .panel-tag {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -650,8 +730,15 @@ body.cinema-mode .cinema-letterbox {
   box-shadow: 0 0 12px rgba(255, 204, 0, 0.5);
 }
 
-/* 响应式调整 */
-@media (max-width: 1200px) {
+/* ==================== 响应式与移动端适配 ==================== */
+
+@media (min-width: 901px) {
+  .mobile-drawer-btn {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 901px) {
   .hud-panel {
     width: 290px;
     padding: 12px;
@@ -659,5 +746,212 @@ body.cinema-mode .cinema-letterbox {
   .kpi-card {
     min-width: 85px;
     padding: 6px 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* 头部极简化：单行标题 + 紧凑指标 */
+  .hud-header {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  .header-left {
+    pointer-events: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .title-group h1 {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+
+  .title-group .subtitle {
+    display: none;
+  }
+
+  .status-indicator {
+    padding: 2px 8px;
+    gap: 5px;
+  }
+
+  .status-text {
+    font-size: 10px;
+  }
+
+  /* KPI 指标卡片为单行横向滚动条，极度紧凑且绝不挡视线 */
+  .header-kpis {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    gap: 6px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+  }
+
+  .header-kpis::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kpi-card {
+    min-width: fit-content;
+    padding: 4px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: rgba(8, 14, 25, 0.78);
+    backdrop-filter: blur(8px);
+  }
+
+  .kpi-label {
+    font-size: 10px;
+    margin-bottom: 0;
+  }
+
+  .kpi-value {
+    font-size: 13.5px;
+  }
+
+  .kpi-value small {
+    font-size: 10px;
+  }
+
+  /* 侧边面板全部转换为上拉抽屉，移动端默认完全隐藏，留出 100% 3D 视野 */
+  .hud-panel {
+    position: fixed;
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: 480px;
+    margin: 0 auto;
+    max-height: 72vh;
+    overflow-y: auto;
+    z-index: 50;
+    transform: translateY(130%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.32s;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 210, 255, 0.35);
+  }
+
+  .hud-panel.active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .panel-close-btn {
+    display: flex;
+  }
+
+  /* 底部交互坞紧凑化与横滑控制条 */
+  .hud-footer {
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .timeline-container {
+    gap: 8px;
+  }
+
+  .time-readout {
+    font-size: 12px;
+    min-width: 76px;
+  }
+
+  .timeline-node span {
+    display: none;
+  }
+
+  .controls-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding: 2px 0;
+    width: 100%;
+  }
+
+  .controls-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .control-group {
+    flex-shrink: 0;
+    gap: 4px;
+  }
+
+  .group-label {
+    display: none;
+  }
+
+  .btn-ctrl, .btn-stage, .btn-cam, .btn-rate, .btn-icon {
+    padding: 6px 9px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .mobile-drawer-btn {
+    background: rgba(0, 210, 255, 0.18);
+    border-color: rgba(0, 210, 255, 0.45);
+    color: #e0f2fe;
+    font-weight: 600;
+  }
+
+  /* 声音横幅 */
+  .audio-banner {
+    top: 70px;
+    width: calc(100% - 20px);
+    max-width: 360px;
+    padding: 6px 12px;
+  }
+
+  .audio-text {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .audio-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-group h1 {
+    font-size: 13.5px;
+    max-width: 200px;
+  }
+
+  .time-readout {
+    font-size: 11px;
+    min-width: 70px;
+  }
+
+  .btn-ctrl, .btn-stage, .btn-cam, .btn-rate, .btn-icon {
+    padding: 5px 8px;
+    font-size: 11.5px;
   }
 }

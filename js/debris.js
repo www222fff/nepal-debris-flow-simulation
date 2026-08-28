@@ -353,7 +353,8 @@ export class DebrisFlowSimulation {
 
     const sprite = new THREE.Sprite(spriteMat);
     sprite.position.y = height + 6;
-    sprite.scale.set(38, 11.2, 1);
+    const scaleFactor = Math.max(0.72, Math.min(1.0, window.innerWidth / 900));
+    sprite.scale.set(38 * scaleFactor, 11.2 * scaleFactor, 1);
     group.add(sprite);
 
     return group;

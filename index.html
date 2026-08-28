@@ -25,6 +25,7 @@
   <!-- 暴风雨暗角与滤镜遮罩 -->
   <div class="vignette-overlay"></div>
   <div id="lightning-flash" class="lightning-flash"></div>
+  <div id="hud-drawer-backdrop" class="hud-backdrop"></div>
 
   <!-- 3D 沉浸式音效开启提示条 (点击任意位置自动激活) -->
   <div id="audio-unlock-banner" class="audio-banner">
@@ -73,10 +74,13 @@
   </header>
 
   <!-- 左侧遥测面板 -->
-  <aside class="hud-panel hud-left glass-card">
+  <aside class="hud-panel hud-left glass-card" id="hud-panel-left">
     <div class="panel-header">
-      <span class="panel-tag">TELEMETRY DATA</span>
-      <h2>实时地质动力学遥测</h2>
+      <div class="panel-header-title">
+        <span class="panel-tag">TELEMETRY DATA</span>
+        <h2>实时地质动力学遥测</h2>
+      </div>
+      <button class="panel-close-btn" id="btn-close-left" aria-label="关闭面板">✕</button>
     </div>
 
     <div class="meter-group">
@@ -123,10 +127,13 @@
   </aside>
 
   <!-- 右侧解说与受灾信息 -->
-  <aside class="hud-panel hud-right glass-card">
+  <aside class="hud-panel hud-right glass-card" id="hud-panel-right">
     <div class="panel-header">
-      <span class="panel-tag" id="stage-tag">PHASE 01 / 03</span>
-      <span class="sim-clock" id="sim-clock">T + 00:00</span>
+      <div class="panel-header-title">
+        <span class="panel-tag" id="stage-tag">PHASE 01 / 03</span>
+        <span class="sim-clock" id="sim-clock">T + 00:00</span>
+      </div>
+      <button class="panel-close-btn" id="btn-close-right" aria-label="关闭面板">✕</button>
     </div>
 
     <h3 id="stage-title" class="stage-title">高位坡体暴雨软化与滑动起动</h3>
@@ -205,6 +212,13 @@
         <button class="btn-cam" data-cam="free">🎮 自由漫游</button>
       </div>
 
+      <!-- 移动端与便捷遥测/详情抽屉控制 -->
+      <div class="control-group mobile-drawer-group">
+        <button class="btn-ctrl mobile-drawer-btn" id="btn-toggle-telemetry">📊 遥测数据</button>
+        <button class="btn-ctrl mobile-drawer-btn" id="btn-toggle-story">📝 灾情详情</button>
+        <button class="btn-ctrl mobile-drawer-btn" id="btn-toggle-clean" title="隐藏HUD纯净欣赏">👁️ 纯净视野</button>
+      </div>
+
       <!-- 仿真速率与辅助功能 -->
       <div class="control-group aux-controls">
         <button class="btn-rate" data-rate="0.5">0.5×</button>
@@ -216,6 +230,9 @@
       </div>
     </div>
   </footer>
+
+  <!-- 纯净模式下浮动恢复按钮 -->
+  <button id="btn-restore-hud" class="btn-restore-hud" title="恢复HUD界面">👁️ 恢复界面</button>
 
   <!-- 脚本入口 -->
   <script type="module" src="./js/app.js"></script>

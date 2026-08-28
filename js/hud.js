@@ -54,6 +54,17 @@ export class HUDController {
     this.btnFullscreen = document.getElementById('btn-fullscreen');
     this.btnCinema = document.getElementById('btn-cinema');
 
+    // 移动端抽屉与纯净模式控制
+    this.panelLeft = document.getElementById('hud-panel-left');
+    this.panelRight = document.getElementById('hud-panel-right');
+    this.drawerBackdrop = document.getElementById('hud-drawer-backdrop');
+    this.btnToggleTelemetry = document.getElementById('btn-toggle-telemetry');
+    this.btnToggleStory = document.getElementById('btn-toggle-story');
+    this.btnCloseLeft = document.getElementById('btn-close-left');
+    this.btnCloseRight = document.getElementById('btn-close-right');
+    this.btnToggleClean = document.getElementById('btn-toggle-clean');
+    this.btnRestoreHud = document.getElementById('btn-restore-hud');
+
     this.stageBtns = document.querySelectorAll('.btn-stage');
     this.camBtns = document.querySelectorAll('.btn-cam');
     this.rateBtns = document.querySelectorAll('.btn-rate');
@@ -107,7 +118,8 @@ export class HUDController {
     if (this.timelineScrubber) {
       const handleScrub = (e) => {
         const rect = this.timelineScrubber.getBoundingClientRect();
-        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
         this.app.setProgress(ratio);
       };
 
@@ -124,13 +136,68 @@ export class HUDController {
       window.addEventListener('mouseup', () => {
         isDragging = false;
       });
+
+      // 移动端触摸进度拖动支持
+      this.timelineScrubber.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        handleScrub(e);
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging) handleScrub(e);
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => {
+        isDragging = false;
+      });
     }
 
+    // 移动端遥测面板抽屉控制
+    const closeAllDrawers = () => {
+      this.panelLeft?.classList.remove('active');
+      this.panelRight?.classList.remove('active');
+      this.drawerBackdrop?.classList.remove('active');
+    };
+
+    this.btnToggleTelemetry?.addEventListener('click', () => {
+      const isOpen = this.panelLeft?.classList.contains('active');
+      closeAllDrawers();
+      if (!isOpen) {
+        this.panelLeft?.classList.add('active');
+        this.drawerBackdrop?.classList.add('active');
+      }
+    });
+
+    this.btnToggleStory?.addEventListener('click', () => {
+      const isOpen = this.panelRight?.classList.contains('active');
+      closeAllDrawers();
+      if (!isOpen) {
+        this.panelRight?.classList.add('active');
+        this.drawerBackdrop?.classList.add('active');
+      }
+    });
+
+    this.btnCloseLeft?.addEventListener('click', closeAllDrawers);
+    this.btnCloseRight?.addEventListener('click', closeAllDrawers);
+    this.drawerBackdrop?.addEventListener('click', closeAllDrawers);
+
+    // 纯净视野模式 (无HUD遮挡)
+    this.btnToggleClean?.addEventListener('click', () => {
+      closeAllDrawers();
+      document.body.classList.add('clean-hud');
+    });
+
+    this.btnRestoreHud?.addEventListener('click', () => {
+      document.body.classList.remove('clean-hud');
+    });
+
     document.getElementById('btn-inspect-village')?.addEventListener('click', () => {
+      if (window.innerWidth <= 900) closeAllDrawers();
       this.app.setCameraMode('village');
     });
 
     document.getElementById('btn-inspect-scar')?.addEventListener('click', () => {
+      if (window.innerWidth <= 900) closeAllDrawers();
       this.app.setCameraMode('source');
     });
   }
