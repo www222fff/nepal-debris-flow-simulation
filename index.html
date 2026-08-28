@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>尼泊尔喜马拉雅高位极端泥石流 3D 动力学仿真系统 (IMAX Edition)</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- 3D 渲染容器 -->
+  <div id="webgl-container"></div>
+
+  <!-- 电影 21:9 宽银幕遮罩 (按需开启) -->
+  <div class="cinema-letterbox top"></div>
+  <div class="cinema-letterbox bottom"></div>
+
+  <!-- 暴风雨暗角与滤镜遮罩 -->
+  <div class="vignette-overlay"></div>
+  <div id="lightning-flash" class="lightning-flash"></div>
+
+  <!-- 3D 沉浸式音效开启提示条 (点击任意位置自动激活) -->
+  <div id="audio-unlock-banner" class="audio-banner">
+    <div class="audio-banner-content">
+      <span class="audio-icon">🔊</span>
+      <span class="audio-text">点击画面任意处开启 <strong>3D 沉浸式次声地鸣、泥石流咆哮与震天雷鸣</strong> 好莱坞级声效</span>
+      <button class="audio-btn" onclick="window.simApp?.audio.init()">立即开启</button>
+    </div>
+  </div>
+
+  <!-- 顶部状态栏 / HUD Header -->
+  <header class="hud-header">
+    <div class="header-left">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span class="status-text">IMAX GEOLOGICAL DYNAMICS · 60 FPS</span>
+      </div>
+      <div class="title-group">
+        <h1>尼泊尔喜马拉雅高位极端泥石流 3D 动力学仿真</h1>
+        <p class="subtitle">NEPAL HIMALAYAN HIGH-ALTITUDE EXTREME DEBRIS FLOW DYNAMICS & RISK EVALUATION</p>
+      </div>
+    </div>
+
+    <div class="header-kpis">
+      <div class="kpi-card">
+        <span class="kpi-label">垂直极限落差</span>
+        <span class="kpi-value">3,700 <small>m</small></span>
+      </div>
+      <div class="kpi-card highlight">
+        <span class="kpi-label">峰值狂暴流速</span>
+        <span class="kpi-value" id="kpi-peak-speed">48.5 <small>m/s</small></span>
+      </div>
+      <div class="kpi-card hot">
+        <span class="kpi-label">前锋浪头峰高</span>
+        <span class="kpi-value">45 <small>m</small></span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">释放瞬时动能</span>
+        <span class="kpi-value" id="kpi-energy">1.84e14 <small>J</small></span>
+      </div>
+      <div class="kpi-card warn">
+        <span class="kpi-label">下游河道淤积</span>
+        <span class="kpi-value" id="kpi-dam-status">特大堰塞湖</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 左侧遥测面板 -->
+  <aside class="hud-panel hud-left glass-card">
+    <div class="panel-header">
+      <span class="panel-tag">TELEMETRY DATA</span>
+      <h2>实时地质动力学遥测</h2>
+    </div>
+
+    <div class="meter-group">
+      <div class="meter-header">
+        <span>降雨诱发强度</span>
+        <span id="txt-rainfall">85.4 mm/h</span>
+      </div>
+      <div class="meter-bar-bg"><div class="meter-bar-fill rain" id="bar-rainfall" style="width: 85%;"></div></div>
+    </div>
+
+    <div class="meter-group">
+      <div class="meter-header">
+        <span>泥石流前锋流速</span>
+        <span id="txt-speed" class="val-hot">0.0 m/s</span>
+      </div>
+      <div class="meter-bar-bg"><div class="meter-bar-fill speed" id="bar-speed" style="width: 0%;"></div></div>
+    </div>
+
+    <div class="meter-group">
+      <div class="meter-header">
+        <span>前锋瞬时高程</span>
+        <span id="txt-elevation">5,300 m</span>
+      </div>
+      <div class="meter-bar-bg"><div class="meter-bar-fill elev" id="bar-elevation" style="width: 100%;"></div></div>
+    </div>
+
+    <div class="meter-group">
+      <div class="meter-header">
+        <span>动水冲击压强</span>
+        <span id="txt-pressure">0.0 kPa</span>
+      </div>
+      <div class="meter-bar-bg"><div class="meter-bar-fill pressure" id="bar-pressure" style="width: 0%;"></div></div>
+    </div>
+
+    <div class="profile-chart-container">
+      <div class="profile-title">沿程高程落差剖面 (Longitudinal Profile)</div>
+      <canvas id="profile-canvas" width="280" height="110"></canvas>
+    </div>
+
+    <div class="disaster-badge" id="risk-badge">
+      <span class="badge-icon">⚠️</span>
+      <span id="risk-desc">阶段一：持续季风暴雨与高位冰碛斜坡饱和失稳</span>
+    </div>
+  </aside>
+
+  <!-- 右侧解说与受灾信息 -->
+  <aside class="hud-panel hud-right glass-card">
+    <div class="panel-header">
+      <span class="panel-tag" id="stage-tag">PHASE 01 / 03</span>
+      <span class="sim-clock" id="sim-clock">T + 00:00</span>
+    </div>
+
+    <h3 id="stage-title" class="stage-title">高位坡体暴雨软化与滑动起动</h3>
+    <p id="stage-body" class="stage-body">
+      喜马拉雅高海拔冰碛物在连续季风暴雨渗透下孔隙水压力急剧增加。高位基岩裂隙贯通，形成体积逾 80 万立方米的深层滑坡体，向狭窄冲沟源区初次崩垮。
+    </p>
+
+    <div class="threat-summary">
+      <h4>受灾基础设施状态评估</h4>
+      <div class="threat-item">
+        <span class="threat-label">下游河畔村落</span>
+        <span class="threat-status safe" id="status-village">处于预警避险状态</span>
+      </div>
+      <div class="threat-item">
+        <span class="threat-label">峡谷干线公路</span>
+        <span class="threat-status safe" id="status-road">路基正常通行</span>
+      </div>
+      <div class="threat-item">
+        <span class="threat-label">跨河主钢桥</span>
+        <span class="threat-status safe" id="status-bridge">结构安全未受力</span>
+      </div>
+      <div class="threat-item">
+        <span class="threat-label">干流主河道</span>
+        <span class="threat-status safe" id="status-river">天然水流排泄中</span>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <button class="action-btn highlight" id="btn-inspect-village">🏘️ 仰视村落灭顶</button>
+      <button class="action-btn" id="btn-inspect-scar">🏔️ 聚焦滑坡源区</button>
+    </div>
+  </aside>
+
+  <!-- 底部交互控制坞 / HUD Footer Dock -->
+  <footer class="hud-footer glass-card">
+    <!-- 时间轴与滑块 -->
+    <div class="timeline-container">
+      <span class="time-readout" id="timeline-text">00:00 / 02:30</span>
+      <div class="timeline-track-wrap" id="timeline-scrubber">
+        <div class="timeline-track-bg"></div>
+        <div class="timeline-track-fill" id="timeline-fill"></div>
+        <div class="timeline-scrubber-handle" id="timeline-handle"></div>
+        <!-- 阶段节点标记 -->
+        <div class="timeline-node node-1" style="left: 0%;"><i></i><span>暴雨失稳</span></div>
+        <div class="timeline-node node-2" style="left: 35%;"><i></i><span>狂暴冲沟下泄</span></div>
+        <div class="timeline-node node-3" style="left: 72%;"><i></i><span>谷底漫溢与堰塞</span></div>
+      </div>
+    </div>
+
+    <!-- 控制按键矩阵 -->
+    <div class="controls-row">
+      <!-- 播放控制区 -->
+      <div class="control-group">
+        <button class="btn-ctrl primary" id="btn-play">▶ 播放演化</button>
+        <button class="btn-ctrl" id="btn-restart">↺ 重置回初始</button>
+      </div>
+
+      <!-- 阶段快速跳转 -->
+      <div class="control-group stage-buttons">
+        <span class="group-label">灾害阶段:</span>
+        <button class="btn-stage active" data-stage="1">1. 坡体起动</button>
+        <button class="btn-stage" data-stage="2">2. 冲沟下泄</button>
+        <button class="btn-stage" data-stage="3">3. 漫溢淤塞</button>
+      </div>
+
+      <!-- 预设视角选择 (导演级机位) -->
+      <div class="control-group camera-buttons">
+        <span class="group-label">机位:</span>
+        <button class="btn-cam active special" data-cam="director">🎬 导演巡航</button>
+        <button class="btn-cam" data-cam="fpv">🚀 穿越机</button>
+        <button class="btn-cam" data-cam="tracking">🌊 贴地追浪</button>
+        <button class="btn-cam" data-cam="village">🏘️ 村落仰视</button>
+        <button class="btn-cam" data-cam="bridge">🌉 大桥特写</button>
+        <button class="btn-cam" data-cam="source">🏔️ 极顶冰崩</button>
+        <button class="btn-cam" data-cam="panoramic">🚁 宏观鸟瞰</button>
+        <button class="btn-cam" data-cam="free">🎮 自由漫游</button>
+      </div>
+
+      <!-- 仿真速率与辅助功能 -->
+      <div class="control-group aux-controls">
+        <button class="btn-rate" data-rate="0.5">0.5×</button>
+        <button class="btn-rate active" data-rate="1">1.0×</button>
+        <button class="btn-rate" data-rate="2">2.0×</button>
+        <button class="btn-icon" id="btn-cinema" title="切换 21:9 宽银幕模式">🎞️ 宽银幕</button>
+        <button class="btn-icon" id="btn-sound" title="音效开关">🔊 声音开</button>
+        <button class="btn-icon" id="btn-fullscreen" title="全屏演示">⛶ 全屏</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 脚本入口 -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
