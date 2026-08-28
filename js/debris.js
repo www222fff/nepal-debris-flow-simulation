@@ -337,11 +337,11 @@ export class DebrisFlowSimulation {
     ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 22px system-ui, sans-serif';
+    ctx.font = 'bold 26px system-ui, sans-serif';
     ctx.fillText(title, 18, 42);
 
     ctx.fillStyle = '#a0b5d0';
-    ctx.font = '16px monospace';
+    ctx.font = '19px monospace';
     ctx.fillText(subtitle, 18, 82);
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -353,7 +353,7 @@ export class DebrisFlowSimulation {
 
     const sprite = new THREE.Sprite(spriteMat);
     sprite.position.y = height + 6;
-    sprite.scale.set(28, 8.2, 1);
+    sprite.scale.set(38, 11.2, 1);
     group.add(sprite);
 
     return group;

@@ -264,10 +264,10 @@ export class HUDController {
     ctx.fillStyle = grad;
     ctx.fill();
 
-    ctx.fillStyle = '#8e9cb2';
-    ctx.font = '9px monospace';
-    ctx.fillText('5,300m (源区)', 12, 12);
-    ctx.fillText('1,600m (谷底)', w - 75, 82);
+    ctx.fillStyle = '#c3cee0';
+    ctx.font = '12px monospace';
+    ctx.fillText('5,300m (源区)', 12, 14);
+    ctx.fillText('1,600m (谷底)', w - 100, 82);
 
     const t = progress;
     const p0 = { x: 10, y: 12 };
